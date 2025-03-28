@@ -4,9 +4,11 @@ import static de.androidcrypto.mifare_ultralight_ev1_explorer.MIFARE_Ultralight_
 import static de.androidcrypto.mifare_ultralight_ev1_explorer.MIFARE_Ultralight_EV1.customPack;
 import static de.androidcrypto.mifare_ultralight_ev1_explorer.MIFARE_Ultralight_EV1.customPassword;
 import static de.androidcrypto.mifare_ultralight_ev1_explorer.MIFARE_Ultralight_EV1.defaultPack;
-import static de.androidcrypto.mifare_ultralight_ev1_explorer.MIFARE_Ultralight_EV1.defaultPassword;import static de.androidcrypto.mifare_ultralight_ev1_explorer.MIFARE_Ultralight_EV1.identifyUltralightEv1Tag;
+import static de.androidcrypto.mifare_ultralight_ev1_explorer.MIFARE_Ultralight_EV1.defaultPassword;
+import static de.androidcrypto.mifare_ultralight_ev1_explorer.MIFARE_Ultralight_EV1.identifyUltralightEv1Tag;
 import static de.androidcrypto.mifare_ultralight_ev1_explorer.MIFARE_Ultralight_EV1.identifyUltralightFamily;
-import static de.androidcrypto.mifare_ultralight_ev1_explorer.MIFARE_Ultralight_EV1.increaseCounterByOneEv1;
+import static de.androidcrypto.mifare_ultralight_ev1_explorer.MIFARE_Ultralight_EV1.increaseCounterByValueEv1;
+import static de.androidcrypto.mifare_ultralight_ev1_explorer.MIFARE_Ultralight_EV1.setCounterValueEv1;
 import static de.androidcrypto.mifare_ultralight_ev1_explorer.MIFARE_Ultralight_EV1.pagesToRead;
 import static de.androidcrypto.mifare_ultralight_ev1_explorer.MIFARE_Ultralight_EV1.readCounterEv1;
 import static de.androidcrypto.mifare_ultralight_ev1_explorer.Utils.bytesToHexNpe;
@@ -23,6 +25,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,7 +56,8 @@ public class WriteCounterFragment extends Fragment implements NfcAdapter.ReaderC
     private com.google.android.material.textfield.TextInputLayout counter0Layout;
     private com.google.android.material.textfield.TextInputEditText incrementCounter, counter0, resultNfcWriting;
     private RadioButton rbNoAuth, rbDefaultAuth, rbCustomAuth;
-    private RadioButton incrementNoCounter, incrementCounter0, incrementCounter1, incrementCounter2;
+    private RadioButton incrementNoCounter, incrementCounter0, incrementCounter1, incrementCounter2, setCounter0, setCounter1, setCounter2;
+    private EditText etIncreaseValue0, etIncreaseValue1, etIncreaseValue2, etSetValue0, etSetValue1, etSetValue2;
     private View loadingLayout;
     private NfcAdapter mNfcAdapter;
     private NfcA nfcA;
@@ -110,9 +114,40 @@ public class WriteCounterFragment extends Fragment implements NfcAdapter.ReaderC
         incrementCounter0 = getView().findViewById(R.id.rbIncreaseCounter0);
         incrementCounter1 = getView().findViewById(R.id.rbIncreaseCounter1);
         incrementCounter2 = getView().findViewById(R.id.rbIncreaseCounter2);
+        etIncreaseValue0 = getView().findViewById(R.id.etIncreaseValue0);
+        etIncreaseValue1 = getView().findViewById(R.id.etIncreaseValue1);
+        etIncreaseValue2 = getView().findViewById(R.id.etIncreaseValue2);
+        setCounter0 = getView().findViewById(R.id.rbSetCounter0);
+        setCounter1 = getView().findViewById(R.id.rbSetCounter1);
+        setCounter2 = getView().findViewById(R.id.rbSetCounter2);
+        etSetValue0 = getView().findViewById(R.id.etSetValue0);
+        etSetValue1 = getView().findViewById(R.id.etSetValue1);
+        etSetValue2 = getView().findViewById(R.id.etSetValue2);
+
         resultNfcWriting = getView().findViewById(R.id.etReadResult);
         loadingLayout = getView().findViewById(R.id.loading_layout);
         mNfcAdapter = NfcAdapter.getDefaultAdapter(getView().getContext());
+
+        // ## Manually enforce mutual exclusivity of radio buttons since we added EditText in the RadioGroup ##
+        // Group the radio buttons logically
+        final RadioButton[] counterRadioButtons = {incrementNoCounter, incrementCounter0, incrementCounter1, incrementCounter2, setCounter0, setCounter1, setCounter2};
+        final EditText[] counterEditTexts = {etIncreaseValue0, etIncreaseValue1, etIncreaseValue2, etSetValue0, etSetValue1, etSetValue2};
+
+        // Listener for each radio button
+        View.OnClickListener radioListener = v -> {
+            RadioButton checkedRadioButton = (RadioButton) v;
+            // Uncheck all others in the logical group
+            for (RadioButton rb : counterRadioButtons) {
+                if (rb.getId() != checkedRadioButton.getId()) {
+                    rb.setChecked(false);
+                }
+            }
+        };
+
+        // Assign the listener to each radio button
+        for (RadioButton rb : counterRadioButtons) {
+            rb.setOnClickListener(radioListener);
+        }
     }
 
     /**
@@ -241,27 +276,83 @@ public class WriteCounterFragment extends Fragment implements NfcAdapter.ReaderC
                 if (incrementNoCounter.isChecked()) {
                     Log.d(TAG, "No counter should get increased");
                     writeToUiAppend("No counter should get increased");
-                }
-                if (incrementCounter0.isChecked()) {
+                } else if (incrementCounter0.isChecked()) {
                     if (!authSuccess) {
                         writeToUiAppend("Previous Auth was not successful or not done, skipped");
                     } else {
-                        success = increaseCounterByOneEv1(nfcA, 0);
-                        writeToUiAppend("Status of increaseCounterValueByOne for counter 0: " + success);
+                        int incrementValue = 1;
+                        try {
+                            incrementValue = Integer.parseInt(etIncreaseValue0.getText().toString());
+                        } catch (NumberFormatException e) {
+                            writeToUiAppend("Error parsing increment value, using 1 as default");
+                        }
+                        success = increaseCounterByValueEv1(nfcA, 0, incrementValue);
+                        writeToUiAppend("Status of increasing counter 0 by " + incrementValue + ": " + success);
                     }
                 } else if (incrementCounter1.isChecked()) {
                     if (!authSuccess) {
                         writeToUiAppend("Previous Auth was not successful or not done, skipped");
                     } else {
-                        success = increaseCounterByOneEv1(nfcA, 1);
-                        writeToUiAppend("Status of increaseCounterValueByOne for counter 1: " + success);
+                        int incrementValue = 1;
+                        try {
+                            incrementValue = Integer.parseInt(etIncreaseValue1.getText().toString());
+                        } catch (NumberFormatException e) {
+                            writeToUiAppend("Error parsing increment value, using 1 as default");
+                        }
+                        success = increaseCounterByValueEv1(nfcA, 1, incrementValue);
+                        writeToUiAppend("Status of increasing counter 1 by " + incrementValue + ": " + success);
                     }
                 } else if (incrementCounter2.isChecked()) {
                     if (!authSuccess) {
                         writeToUiAppend("Previous Auth was not successful or not done, skipped");
                     } else {
-                        success = increaseCounterByOneEv1(nfcA, 2);
-                        writeToUiAppend("Status of increaseCounterValueByOne for counter 2: " + success);
+                        int incrementValue = 1;
+                        try {
+                            incrementValue = Integer.parseInt(etIncreaseValue2.getText().toString());
+                        } catch (NumberFormatException e) {
+                            writeToUiAppend("Error parsing increment value, using 1 as default");
+                        }
+                        success = increaseCounterByValueEv1(nfcA, 2, incrementValue);
+                        writeToUiAppend("Status of increasing counter 2 by " + incrementValue + ": " + success);
+                    }
+                } else if (setCounter0.isChecked()) {
+                    if (!authSuccess) {
+                        writeToUiAppend("Previous Auth was not successful or not done, skipped");
+                    } else {
+                        int setValue = 0;
+                        try {
+                            setValue = Integer.parseInt(etSetValue0.getText().toString());
+                        } catch (NumberFormatException e) {
+                            writeToUiAppend("Error parsing set value, using 0 as default");
+                        }
+                        success = setCounterValueEv1(nfcA, 0, setValue);
+                        writeToUiAppend("Status of setting counter 0 to " + setValue + ": " + success);
+                    }
+                } else if (setCounter1.isChecked()) {
+                    if (!authSuccess) {
+                        writeToUiAppend("Previous Auth was not successful or not done, skipped");
+                    } else {
+                        int setValue = 0;
+                        try {
+                            setValue = Integer.parseInt(etSetValue1.getText().toString());
+                        } catch (NumberFormatException e) {
+                            writeToUiAppend("Error parsing set value, using 0 as default");
+                        }
+                        success = setCounterValueEv1(nfcA, 1, setValue);
+                        writeToUiAppend("Status of setting counter 1 to " + setValue + ": " + success);
+                    }
+                } else if (setCounter2.isChecked()) {
+                    if (!authSuccess) {
+                        writeToUiAppend("Previous Auth was not successful or not done, skipped");
+                    } else {
+                        int setValue = 0;
+                        try {
+                            setValue = Integer.parseInt(etSetValue2.getText().toString());
+                        } catch (NumberFormatException e) {
+                            writeToUiAppend("Error parsing set value, using 0 as default");
+                        }
+                        success = setCounterValueEv1(nfcA, 2, setValue);
+                        writeToUiAppend("Status of setting counter 2 to " + setValue + ": " + success);
                     }
                 }
                 int counter0I = readCounterEv1(nfcA, 0);

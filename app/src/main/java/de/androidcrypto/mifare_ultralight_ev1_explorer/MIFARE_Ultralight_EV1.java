@@ -454,6 +454,71 @@ public class MIFARE_Ultralight_EV1 {
         }
     }
 
+    public static boolean increaseCounterByValueEv1(NfcA nfcA, int counterNumber, int incrementValue) {
+        if ((counterNumber < 0) || (counterNumber > 2)) {
+            Log.e(TAG, "The counterNumber is out of range 0..2, aborted");
+            return false;
+        }
+        if (incrementValue < 0) {
+            Log.e(TAG, "The incrementValue cannot be negative, aborted");
+            return false;
+        }
+        if (incrementValue > 0xFFFFFF) {
+            Log.e(TAG, "The incrementValue is too large (max 0xFFFFFF), aborted");
+            return false;
+        }
+        byte[] response = null;
+        try {
+            // Convert increment value to 3 bytes (LSB order)
+            byte lsb = (byte)(incrementValue & 0xFF);
+            byte mid = (byte)((incrementValue >> 8) & 0xFF);
+            byte msb = (byte)((incrementValue >> 16) & 0xFF);
+            
+            response = nfcA.transceive(new byte[]{
+                    (byte) 0xA5,
+                    (byte) (counterNumber & 0x0ff),
+                    lsb, // LSB
+                    mid, // middle byte
+                    msb, // MSB
+                    (byte) 0x00, // this byte is ignored
+            });
+            return true;
+        } catch (IOException e) {
+            Log.e(TAG, "IOException when increasing counter: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public static boolean setCounterValueEv1(NfcA nfcA, int counterNumber, int setValue) {
+        if ((counterNumber < 0) || (counterNumber > 2)) {
+            Log.e(TAG, "The counterNumber is out of range 0..2, aborted");
+            return false;
+        }
+        if (setValue < 0) {
+            Log.e(TAG, "The setValue cannot be negative, aborted");
+            return false;
+        }
+        if (setValue > 0xFFFFFF) {
+            Log.e(TAG, "The setValue is too large (max 0xFFFFFF), aborted");
+            return false;
+        }
+
+        int counterValue = readCounterEv1(nfcA, counterNumber);
+        if (counterValue < 0) {
+            Log.e(TAG, "The counter value cannot be read, aborted");
+            return false;
+        }
+        if (counterValue >= setValue) {
+            // counter are one-way and can be only increase
+            Log.e(TAG, "The counter value cannot be decreased, aborted");
+            return false;
+        }
+
+        setValue = setValue - counterValue;
+
+        return increaseCounterByValueEv1(nfcA, counterNumber, setValue);
+    }
+
     /**
      * Reads the complete content of the tag and returns an array of pages
      * Pages that are not readable (e.g. read protected or by design) are NULL.

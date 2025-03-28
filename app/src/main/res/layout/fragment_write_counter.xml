@@ -97,41 +97,139 @@
 
         </LinearLayout>
 
-        <RadioGroup
-            android:id="@+id/rbCounter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
+            <!-- 1st radio button with no EditText -->
             <RadioButton
                 android:id="@+id/rbCounterNoIncrease"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
                 android:checked="true"
                 android:text="no counter increase, just reading values" />
 
-            <RadioButton
-                android:id="@+id/rbIncreaseCounter0"
-                android:layout_width="wrap_content"
+            <!-- 2nd radio button with EditText -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:text="increase counter 0 by 1" />
+                android:orientation="horizontal">
 
-            <RadioButton
-                android:id="@+id/rbIncreaseCounter1"
-                android:layout_width="wrap_content"
+                <RadioButton
+                    android:id="@+id/rbIncreaseCounter0"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="increase counter 0 by" />
+
+                <EditText
+                    android:id="@+id/etIncreaseValue0"
+                    android:layout_width="70dp"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:text="1" />
+            </LinearLayout>
+
+            <!-- 3rd radio button with EditText -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:text="increase counter 1 by 1" />
+                android:orientation="horizontal">
 
-            <RadioButton
-                android:id="@+id/rbIncreaseCounter2"
-                android:layout_width="wrap_content"
+                <RadioButton
+                    android:id="@+id/rbIncreaseCounter1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="increase counter 1 by" />
+
+                <EditText
+                    android:id="@+id/etIncreaseValue1"
+                    android:layout_width="70dp"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:text="1" />
+            </LinearLayout>
+
+            <!-- 4th radio button with EditText -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:text="increase counter 2 by 1" />
+                android:orientation="horizontal">
 
-        </RadioGroup>
+                <RadioButton
+                    android:id="@+id/rbIncreaseCounter2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="increase counter 2 by" />
+
+                <EditText
+                    android:id="@+id/etIncreaseValue2"
+                    android:layout_width="70dp"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:text="1" />
+            </LinearLayout>
+
+            <!-- 5th radio button with EditText -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/rbSetCounter0"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="set counter 0 to" />
+
+                <EditText
+                    android:id="@+id/etSetValue0"
+                    android:layout_width="70dp"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:text="1" />
+            </LinearLayout>
+            
+            <!-- 6th radio button with EditText -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/rbSetCounter1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="set counter 1 to" />
+
+                <EditText
+                    android:id="@+id/etSetValue1"
+                    android:layout_width="70dp"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:text="1" />
+            </LinearLayout>
+
+            <!-- Fourth radio button with EditText -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/rbSetCounter2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="set counter 2 to" />
+
+                <EditText
+                    android:id="@+id/etSetValue2"
+                    android:layout_width="70dp"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:text="1" />
+            </LinearLayout>  
+        </LinearLayout>
 
         <com.google.android.material.divider.MaterialDivider
             android:layout_width="match_parent"
